@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pôjdeš dnes behať?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --noc:#151038;
+    --sumrak:#241a52;
+    --lampa:#ffc14d;
+    --vesta:#c8ff3d;
+    --macka:#ff7ba9;
+    --krem:#efe9ff;
+    --tlmene:#a79ccb;
+    --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+    --telo:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{height:100%}
+
+  body{
+    margin:0;
+    font-family:var(--telo);
+    color:var(--krem);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #3b2a6e 0%, transparent 60%),
+      radial-gradient(80% 50% at 85% 15%, rgba(255,193,77,.22) 0%, transparent 70%),
+      linear-gradient(180deg, var(--sumrak) 0%, var(--noc) 100%);
+    background-attachment:fixed;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px 40px;
+    overflow-x:hidden;
+  }
+
+  /* pouličná lampa v rohu */
+  body::before{
+    content:"";
+    position:fixed;
+    top:-140px; right:-60px;
+    width:420px; height:420px;
+    background:radial-gradient(circle, rgba(255,193,77,.35) 0%, transparent 62%);
+    filter:blur(6px);
+    pointer-events:none;
+  }
+
+  .karta{
+    position:relative;
+    width:min(560px, 100%);
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(239,233,255,.14);
+    border-radius:28px;
+    padding:34px 28px 30px;
+    backdrop-filter:blur(10px);
+    box-shadow:0 30px 70px rgba(8,4,28,.55);
+  }
+
+  .stitok{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--vesta);
+    border:1px solid rgba(200,255,61,.35);
+    border-radius:999px;
+    padding:6px 12px;
+    margin-bottom:20px;
+  }
+  .stitok span{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--vesta);
+    box-shadow:0 0 10px var(--vesta);
+    animation:tep 1.6s ease-in-out infinite;
+  }
+  @keyframes tep{50%{opacity:.25;transform:scale(.7)}}
+
+  h1{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(34px, 8.5vw, 54px);
+    line-height:.98;
+    letter-spacing:-.02em;
+    margin:0 0 14px;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--lampa);
+    display:block;
+  }
+
+  .podtext{
+    color:var(--tlmene);
+    font-size:15px;
+    line-height:1.55;
+    margin:0 0 18px;
+    max-width:42ch;
+  }
+
+  .cipy{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:24px;
+  }
+  .cip{
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--krem);
+    background:rgba(239,233,255,.08);
+    border:1px solid rgba(239,233,255,.1);
+    border-radius:999px;
+    padding:6px 12px;
+  }
+
+  /* ihrisko pre utekajúce tlačidlo */
+  .plocha{
+    position:relative;
+    min-height:220px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:14px 0 4px;
+  }
+
+  button{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:19px;
+    letter-spacing:-.01em;
+    border:0;
+    border-radius:16px;
+    padding:16px 30px;
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  button:focus-visible{
+    outline:3px solid var(--vesta);
+    outline-offset:3px;
+  }
+
+  #ano{
+    position:relative;
+    z-index:2;
+    background:linear-gradient(160deg, var(--vesta), #9fe000);
+    color:#12210a;
+    box-shadow:0 12px 30px rgba(200,255,61,.25);
+  }
+  #ano:hover{transform:translateY(-2px) scale(1.03)}
+  #ano:active{transform:translateY(0) scale(.98)}
+
+  #nie{
+    background:rgba(239,233,255,.1);
+    color:var(--krem);
+    border:1px solid rgba(239,233,255,.2);
+    white-space:nowrap;
+    font-size:17px;
+    padding:15px 24px;
+    max-width:100%;
+  }
+  @media (max-width:430px){
+    #nie{font-size:14px; padding:13px 16px}
+    .plocha{min-height:250px}
+  }
+
+  .stopa{
+    position:absolute;
+    font-size:20px;
+    pointer-events:none;
+    animation:zmizni 2.2s forwards ease-out;
+  }
+  @keyframes zmizni{
+    from{opacity:.85; transform:scale(1) rotate(var(--r))}
+    to{opacity:0; transform:scale(.55) rotate(var(--r)) translateY(8px)}
+  }
+
+  .pocitadlo{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--tlmene);
+    min-height:20px;
+    margin-top:6px;
+    letter-spacing:.02em;
+  }
+  .pocitadlo b{color:var(--lampa)}
+
+  /* mačacie meme */
+  .meme{display:none}
+  .meme.vidno{display:block; animation:prilet .5s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes prilet{from{opacity:0; transform:translateY(18px) scale(.94)}}
+
+  .ramik{
+    position:relative;
+    border-radius:22px;
+    overflow:hidden;
+    background:linear-gradient(180deg,#3a2a70,#241a52);
+    border:1px solid rgba(239,233,255,.16);
+  }
+  .ramik svg{display:block; width:100%; height:auto}
+
+  .memetext{
+    position:absolute;
+    left:0; right:0;
+    text-align:center;
+    font-family:var(--display);
+    font-weight:800;
+    text-transform:uppercase;
+    color:#fff;
+    line-height:1.05;
+    font-size:clamp(17px, 5vw, 26px);
+    padding:0 14px;
+    -webkit-text-stroke:2.5px #120c2e;
+    paint-order:stroke fill;
+    text-shadow:0 3px 10px rgba(0,0,0,.5);
+  }
+  .memetext.hore{top:14px}
+  .memetext.dole{bottom:14px}
+
+  .macka-telo{animation:hop 1.5s ease-in-out infinite; transform-origin:250px 260px}
+  @keyframes hop{50%{transform:translateY(-7px)}}
+
+  .potvrdenie{
+    margin:18px 0 0;
+    text-align:center;
+    font-size:15px;
+    line-height:1.6;
+    color:var(--krem);
+  }
+  .potvrdenie strong{color:var(--vesta)}
+
+  .znova{
+    display:block;
+    margin:16px auto 0;
+    background:none;
+    border:0;
+    color:var(--tlmene);
+    font-family:var(--telo);
+    font-size:13px;
+    font-weight:500;
+    text-decoration:underline;
+    text-underline-offset:4px;
+    padding:6px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<main class="karta">
+
+  <!-- OTÁZKA -->
+  <section id="otazka">
+    <div class="stitok"><span></span>Večerná výzva</div>
+
+    <h1>Pôjdeš dnes<em>večer behať?</em></h1>
+
+    <p class="podtext">Čas na beh prišiel takžee odpovedz úprimne jedna z tých možností je správna :))</p>
+
+    <div class="cipy">
+      <div class="cip">🕘 o 21:00</div>
+      <div class="cip">📍 kde chceš</div>
+      <div class="cip">🐢 tempo: skúsim ísť pomalšie =D</div>
+      <div class="cip">🥙 kebab ..potom.. možno 🤷‍♂️</div>
+    </div>
+
+    <div class="plocha" id="plocha">
+      <button id="ano" type="button">Jasné, idem!</button>
+      <button id="nie" type="button">Nie čo si kkt?</button>
+    </div>
+
+    <p class="pocitadlo" id="pocitadlo"></p>
+  </section>
+
+  <!-- MEME PO SÚHLASE -->
+  <section class="meme" id="meme">
+    <div class="ramik">
+      <div class="memetext hore">Podpísané :)</div>
+      <svg viewBox="0 0 500 400" role="img" aria-label="Neo britksá sivá huňatá mačka s oranžovými očami , čelenkou a bežeckými teniskami">
+        <defs>
+          <radialGradient id="pozadie" cx="50%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#5b43a8"/>
+            <stop offset="100%" stop-color="#241a52"/>
+          </radialGradient>
+          <linearGradient id="srst" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d3dbe6"/>
+            <stop offset="55%" stop-color="#a9b5c4"/>
+            <stop offset="100%" stop-color="#8593a5"/>
+          </linearGradient>
+          <radialGradient id="oko" cx="42%" cy="35%" r="70%">
+            <stop offset="0%" stop-color="#ffcf6b"/>
+            <stop offset="55%" stop-color="#ff9a1f"/>
+            <stop offset="100%" stop-color="#e06f00"/>
+          </radialGradient>
+        </defs>
+
+        <rect width="500" height="400" fill="url(#pozadie)"/>
+        <circle cx="80" cy="70" r="2.5" fill="#fff" opacity=".7"/>
+        <circle cx="420" cy="60" r="2" fill="#fff" opacity=".55"/>
+        <circle cx="380" cy="130" r="1.8" fill="#fff" opacity=".45"/>
+        <circle cx="110" cy="150" r="1.6" fill="#fff" opacity=".4"/>
+        <circle cx="250" cy="45" r="2.2" fill="#fff" opacity=".6"/>
+
+        <g class="macka-telo">
+          <!-- uši: malé, okrúhle, nízko posadené -->
+          <path d="M160 156 C150 112 164 84 190 82 C212 94 228 116 236 140 Z" fill="url(#srst)"/>
+          <path d="M340 156 C350 112 336 84 310 82 C288 94 272 116 264 140 Z" fill="url(#srst)"/>
+          <path d="M174 144 C169 116 178 100 192 99 C206 109 216 124 221 140 Z" fill="#c9a3ad"/>
+          <path d="M326 144 C331 116 322 100 308 99 C294 109 284 124 279 140 Z" fill="#c9a3ad"/>
+          <!-- chumáče chlpov v ušiach -->
+          <path d="M186 138 l-8 -18 M196 140 l-2 -20 M206 143 l6 -17" stroke="#eef2f7" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+          <path d="M314 138 l8 -18 M304 140 l2 -20 M294 143 l-6 -17" stroke="#eef2f7" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+
+          <!-- huňatá hlava -->
+          <ellipse cx="250" cy="216" rx="120" ry="104" fill="url(#srst)"/>
+          <!-- plné líca -->
+          <ellipse cx="176" cy="262" rx="58" ry="48" fill="url(#srst)"/>
+          <ellipse cx="324" cy="262" rx="58" ry="48" fill="url(#srst)"/>
+          <!-- svetlejšia srsť okolo tlamy -->
+          <ellipse cx="250" cy="268" rx="86" ry="52" fill="#dde4ec" opacity=".45"/>
+
+          <!-- čelenka na behanie -->
+          <path d="M152 178 q98 -36 196 0 l0 24 q-98 -36 -196 0 Z" fill="#c8ff3d"/>
+          <path d="M152 190 q98 -36 196 0" stroke="#9fe000" stroke-width="5" fill="none"/>
+
+          <!-- oranžové oči -->
+          <circle cx="203" cy="226" r="28" fill="url(#oko)"/>
+          <circle cx="297" cy="226" r="28" fill="url(#oko)"/>
+          <circle cx="203" cy="226" r="28" fill="none" stroke="#7b5a3a" stroke-width="2.5" opacity=".5"/>
+          <circle cx="297" cy="226" r="28" fill="none" stroke="#7b5a3a" stroke-width="2.5" opacity=".5"/>
+          <ellipse cx="203" cy="228" rx="12" ry="14" fill="#1b1430"/>
+          <ellipse cx="297" cy="228" rx="12" ry="14" fill="#1b1430"/>
+          <circle cx="195" cy="216" r="7" fill="#fff" opacity=".95"/>
+          <circle cx="289" cy="216" r="7" fill="#fff" opacity=".95"/>
+          <circle cx="210" cy="238" r="3.5" fill="#fff" opacity=".7"/>
+          <circle cx="304" cy="238" r="3.5" fill="#fff" opacity=".7"/>
+
+          <!-- nos a ústa -->
+          <path d="M238 258 q12 -6 24 0 q-6 16 -12 18 q-6 -2 -12 -18 Z" fill="#d98a9c"/>
+          <path d="M250 276 q-16 18 -30 4" stroke="#6d7a8a" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <path d="M250 276 q16 18 30 4" stroke="#6d7a8a" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+          <!-- fúzy -->
+          <path d="M146 250 L92 236 M144 264 L88 264 M146 278 L92 292" stroke="#f4f8fc" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+          <path d="M354 250 L408 236 M356 264 L412 264 M354 278 L408 292" stroke="#f4f8fc" stroke-width="4" stroke-linecap="round" opacity=".85"/>
+
+          <!-- labky -->
+          <ellipse cx="194" cy="322" rx="38" ry="24" fill="url(#srst)"/>
+          <ellipse cx="306" cy="322" rx="38" ry="24" fill="url(#srst)"/>
+          <path d="M194 300 l0 18 M180 304 l4 16 M208 304 l-4 16" stroke="#8593a5" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+          <path d="M306 300 l0 18 M292 304 l4 16 M320 304 l-4 16" stroke="#8593a5" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+
+          <!-- bežecké tenisky -->
+          <g class="tenisky">
+            <g transform="translate(246,330) scale(-1.05,1.05)">
+              <path d="M2 32 H98 Q101 32 101 36 Q101 45 92 45 H10 Q2 45 2 37 Z" fill="#f4f8fc"/>
+              <path d="M2 40 H101" stroke="#c3ccd8" stroke-width="2.5"/>
+              <path d="M8 33 V18 Q8 7 21 7 H32 Q39 7 43 13 L57 27 Q61 32 68 33 Z" fill="#c8ff3d"/>
+              <path d="M44 33 L57 20" stroke="#f4f8fc" stroke-width="6" stroke-linecap="round"/>
+              <ellipse cx="20" cy="9" rx="13" ry="6" fill="#9fe000"/>
+              <path d="M24 16 L37 13 M26 21 L41 18 M29 26 L45 23" stroke="#f4f8fc" stroke-width="2.6" stroke-linecap="round"/>
+            </g>
+            <g transform="translate(254,330) scale(1.05)">
+              <path d="M2 32 H98 Q101 32 101 36 Q101 45 92 45 H10 Q2 45 2 37 Z" fill="#f4f8fc"/>
+              <path d="M2 40 H101" stroke="#c3ccd8" stroke-width="2.5"/>
+              <path d="M8 33 V18 Q8 7 21 7 H32 Q39 7 43 13 L57 27 Q61 32 68 33 Z" fill="#c8ff3d"/>
+              <path d="M44 33 L57 20" stroke="#f4f8fc" stroke-width="6" stroke-linecap="round"/>
+              <ellipse cx="20" cy="9" rx="13" ry="6" fill="#9fe000"/>
+              <path d="M24 16 L37 13 M26 21 L41 18 M29 26 L45 23" stroke="#f4f8fc" stroke-width="2.6" stroke-linecap="round"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <div class="memetext dole">Neo ti už aj podáva tenisky aha 🏃‍♀️</div>
+    </div>
+
+    <p class="potvrdenie">Potvrdené: <strong>dnes o 21:00</strong>, potom <strong>kebab</strong>. 🥙<br>Síce večer je už chladnejšie ale žiadne výhovorky, tlačidlo „nie" Ti už aj tak ušlo aaa Neo mi to potvrdil labkou. 🐾</p>
+
+    <button class="znova" id="znova" type="button">späť na otázku.. ale už si podpísala takže bohužéél</button>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  var plocha    = document.getElementById('plocha');
+  var nie       = document.getElementById('nie');
+  var ano       = document.getElementById('ano');
+  var pocitadlo = document.getElementById('pocitadlo');
+  var otazka    = document.getElementById('otazka');
+  var meme      = document.getElementById('meme');
+  var znova     = document.getElementById('znova');
+
+  var pokusy = 0;
+  var uteka  = false;
+  var poslednyPokus = 0;
+
+  // prvých pár v poradí, potom sa žrebuje náhodne (aby sa text nikdy nezasekol)
+  var napisy = [
+    'Nie',
+    'Nie!',
+    'Skús druhú odpoveď',
+    'Fakt nie',
+    'Nemám tenisku',
+    'Neo mi leží na nohách',
+    'Skús druhú odpoveď',
+    'Bolí ma malíček',
+    'Vonku je tma',
+    'Skús druhú odpoveď',
+    'Neo mi leží na nohách',
+    'Zajtra určite',
+    'Práve som jedla',
+    'Skús druhú odpoveď',
+    'Kondička je v servise',
+    'Behám v duchu',
+    'Skús ma chytiť',
+    'Toto tlačidlo je pokazené',
+    'Nie, ale dikymoc',
+    'Prší (neprší)',
+    'Skús druhú odpoveď',,
+    '21:00 je nekoro',
+    'Mám plán (gaučíček)',
+    'Chabé nie',
+    'No dobre... skoro'
+  ];
+
+  function dalsiNapis(){
+    if (pokusy < 7) return napisy[pokusy];          // úvod má pevné poradie
+    return napisy[7 + Math.floor(Math.random() * (napisy.length - 7))];
+  }
+  function stopa(x, y){
+    var s = document.createElement('div');
+    s.className = 'stopa';
+    s.textContent = '👟';
+    s.style.left = x + 'px';
+    s.style.top  = y + 'px';
+    s.style.setProperty('--r', (Math.random() * 60 - 30) + 'deg');
+    plocha.appendChild(s);
+    setTimeout(function(){ s.remove(); }, 2200);
+  }
+
+  function utec(e){
+    if (e) e.preventDefault();
+
+    // pokus sa započíta najviac raz za 700 ms (naháňanie nie je 10 pokusov)
+    var teraz = Date.now();
+    var rataSa = (teraz - poslednyPokus) >= 700;
+
+    if (rataSa){
+      poslednyPokus = teraz;
+      pokusy++;
+      nie.textContent = dalsiNapis();              // najprv text...
+      ano.style.transform = 'scale(' + Math.min(1 + pokusy * 0.04, 1.28) + ')';
+      pocitadlo.innerHTML = 'Neúspešné pokusy o „nie": <b>' + pokusy + '</b>';
+    }
+
+    var p = plocha.getBoundingClientRect();
+    var b = nie.getBoundingClientRect();           // ...až potom meranie novej šírky
+
+    stopa(b.left - p.left + b.width / 2 - 10, b.top - p.top + b.height / 2 - 10);
+
+    if (!uteka){
+      uteka = true;
+      nie.style.position = 'absolute';
+      nie.style.left     = (b.left - p.left) + 'px';
+      nie.style.top      = (b.top - p.top) + 'px';
+    }
+
+    var maxX = Math.max(0, p.width  - b.width  - 6);
+    var maxY = Math.max(0, p.height - b.height - 6);
+    var staraX = b.left - p.left;
+
+    // aktuálna pozícia tlačidla „jasné" (po prelayoutovaní) + odstup
+    var a = ano.getBoundingClientRect();
+    var medzera = 14;
+    var aL = a.left - p.left - medzera;
+    var aT = a.top  - p.top  - medzera;
+    var aR = aL + a.width  + medzera * 2;
+    var aB = aT + a.height + medzera * 2;
+
+    function prekryva(x, y){
+      return !(x + b.width < aL || x > aR || y + b.height < aT || y > aB);
+    }
+
+    function vzdialenost(x, y){
+      var dx = (x + b.width  / 2) - (aL + aR) / 2;
+      var dy = (y + b.height / 2) - (aT + aB) / 2;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    var novaX = 0, novaY = 0, najdene = false;
+    var zalohaX = 0, zalohaY = 0, najlepsia = -1;
+
+    for (var i = 0; i < 80; i++){
+      var x = Math.random() * maxX;
+      var y = Math.random() * maxY;
+      var d = vzdialenost(x, y);
+
+      if (d > najlepsia){ najlepsia = d; zalohaX = x; zalohaY = y; }
+
+      if (prekryva(x, y)) continue;                       // nesmie ležať na „jasné"
+      if (Math.abs(x - staraX) < p.width * 0.3) continue; // a nech naozaj odskočí
+
+      novaX = x; novaY = y; najdene = true;
+      break;
+    }
+
+    if (!najdene){ novaX = zalohaX; novaY = zalohaY; }
+
+    nie.style.left = novaX + 'px';
+    nie.style.top  = novaY + 'px';
+
+  }
+
+  nie.addEventListener('mouseenter', utec);
+  nie.addEventListener('pointerdown', utec);
+  nie.addEventListener('click', utec);
+
+  ano.addEventListener('click', function(){
+    otazka.style.display = 'none';
+    meme.classList.add('vidno');
+  });
+
+  znova.addEventListener('click', function(){
+    meme.classList.remove('vidno');
+    otazka.style.display = '';
+    // reset
+    pokusy = 0;
+    uteka  = false;
+    poslednyPokus = 0;
+    nie.removeAttribute('style');
+    nie.textContent = 'Nie';
+    ano.style.transform = '';
+    pocitadlo.textContent = '';
+  });
+})();
+</script>
+</body>
+</html>
